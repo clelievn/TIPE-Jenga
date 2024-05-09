@@ -141,10 +141,10 @@ def grundy_number(clock, row, column):
 
 def get_moves(game: Game, row, column, new_row, new_column):
     vector = (new_row - row, new_column - column)
-    print("vector = ", vector)
+    # print("vector = ", vector)
     nb_forbidden_rows = forbidden_rows(game)
     nb_allowed_floors = len(game.tower.layout) - nb_forbidden_rows
-    print("nb_allowed_floors = ", nb_allowed_floors)
+    # print("nb_allowed_floors = ", nb_allowed_floors)
 
     # blocks contains coordinates of all the blocks that can be removed to get to the new position 
     blocks = []
