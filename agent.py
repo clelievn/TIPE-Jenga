@@ -23,7 +23,7 @@ class Agent:
 
     def _play_random(game: Game):
         nb_forbidden_rows = forbidden_rows(game)
-        print("height = ", len(game.tower.layout))
+        # print("height = ", len(game.tower.layout))
         z = random.randint(0, game.tower.height - nb_forbidden_rows - 1)
         x = random.choice([i for i in range(3) if game.tower[z][i] is True])
         create_new_row = False
@@ -41,23 +41,23 @@ class Agent:
     def _play_grundy(game: Game):
         # winning position : grundy_value = 0
         clock, layers1, layers2 = clock_nim(game)
-        print(f"clock = {clock}, layers1 = {layers1}, layers2 = {layers2}")
+        # print(f"clock = {clock}, layers1 = {layers1}, layers2 = {layers2}")
         row = layers1 
         column = (3*layers2-1+clock)  
         create_new_row = False
 
         grundy_value = grundy_number(clock, row % 9, column % 9)
-        print("grundy_value = ", grundy_value)
+        # print("grundy_value = ", grundy_value)
 
         next_positions = next_pos(row, column, game.tower.height, game.tower.height * 3 - 1)
         next_grundy = [grundyTable[next_row % 9][next_col % 9] for (next_row, next_col) in next_positions]
-        print("next_positions = ", next_positions)
-        print("next_grundy = ", next_grundy)
+        # print("next_positions = ", next_positions)
+        # print("next_grundy = ", next_grundy)
 
         # if the position is not winning, we play the move with the highest grundy value 
         # (next player is more likely to play a move with a grundy value > 0)
         if grundy_value == 0:
-            print("index_max = ", index_max(next_grundy))
+            # print("index_max = ", index_max(next_grundy))
             (next_row, next_col) = next_positions[index_max(next_grundy)]
         else:
             i=0
@@ -70,7 +70,7 @@ class Agent:
         # next_layers2 = (next_col - clock + 1) // 3
         # we must now choose our move among all the moves that lead to the wanted next position
         moves = get_moves(game, row, column, next_row, next_col)
-        print("moves = ", moves)
+        # print("moves = ", moves)
 
         (x,z) = random.choice(moves)
 
