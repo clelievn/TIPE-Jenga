@@ -1,6 +1,6 @@
 from typing import List
 from tower import Tower
-from constants import TOWER_N_FLOORS
+from constants import TOWER_N_FLOORS, SIZE_1, SIZE_2
 from game import Game
 from constants import FLOOR_SINGLE_SIDE_REVERSED, FLOOR_SINGLE_SIDE, FLOOR_FULL, FLOOR_GLUED, \
     FLOOR_GLUED_REVERSED, TOWER_DEFAULT_LAYOUT
@@ -14,29 +14,42 @@ def mex(values: List[int]) -> int:
 
 # print(mex([2, 1, 0]))
 
+def index_max(values: List[int]) -> int:
+    # returns the index of the maximum value of the int array
+    if len(values) == 1:
+        return 0
+    else:
+        res = 0
+        for i in range(1, len(values)):
+            if values[res] < values[i]:
+                res = i
+        return res
 
-def next_pos(a1, a2, len): 
+
+def next_pos(row, col, nb_rows, nb_col): 
     # a1 : row (number of piles of size 1)
-    # a2 : column (!= number of piles of size 2 due to the repetitions of the columns 
-    # -> 3 columns per number, because of the 3 different states of the clock)
+    # a2 : column (!= number of piles of size 2 due to the repetitions of the columns)
+    # -> 3 columns per number except 0, because of the 3 different states of the clock)
+    # len : height of the jenga tower
     res = []
     # Vector (-1, 1)
-    if a1-1>=0 and a2+1<len: 
-        res.append((a1-1, a2+1))
+    if row-1>=0 and col+1<nb_col-1: 
+        res.append((row-1, col+1))
     # Vector (1, -2)
-    if a1+1<len and a2-2>=0:
-        res.append((a1+1, a2-2))
+    if row+1<nb_rows-1 and col-2>=0:
+        res.append((row+1, col-2))
     # Vector (0, -2)
-    if a2-2>=0:
-        res.append((a1, a2-2))
+    if col-2>=0:
+        res.append((row, col-2))
     return res
 
 
 def prev_pos(a1, a2, len):
     # same as next_pos, but we multiply the vectors by -1
     # a1 : row (number of piles of size 1)
-    # a2 : column (!= number of piles of size 2 due to the repetitions of the columns 
-    # -> 3 columns per number, because of the 3 different states of the clock)
+    # a2 : column (!= number of piles of size 2 due to the repetitions of the columns)
+    # -> 3 columns per number except 0, because of the 3 different states of the clock)
+    # len : height of the jenga tower
     res = []
     # Vector (1, -1)
     if a1+1<len and a2-1>=0: 
@@ -48,16 +61,6 @@ def prev_pos(a1, a2, len):
     if a1+2<len:
         res.append((a1, a2+2))
     return res
-
-# print(prev_pos(0, 0, 11))
-# print(prev_pos(0, 1, 11))
-# print(prev_pos(1, 0, 11))
-# print(prev_pos(3, 5, 11))
-# print(prev_pos(10, 10, 11))
-
-# prev = prev_pos(0, 0, 11)
-# for (prow, pcol) in prev:
-#     print(next_pos(prow, pcol, 11))
 
 
 
@@ -78,7 +81,7 @@ def grundy_table() -> List[List[int]]:
     for diagonal in range(2, 11):
         for i in range(diagonal, -1, -1):
             (row, column) = (diagonal-i, i)
-            next_positions = next_pos(row, column, 11)
+            next_positions = next_pos(row, column, 11, 11)
             grundy_next = [grundyTable[j][k] for (j,k) in next_positions]
             grundyTable[row][column] = mex(grundy_next) 
 
@@ -88,7 +91,7 @@ def grundy_table() -> List[List[int]]:
     for diagonal in range(1, 11):
         for j in range(10, diagonal-1, -1):
             (row, column) = (diagonal-j+10, j)
-            next_positions = next_pos(row, column, 11)
+            next_positions = next_pos(row, column, 11, 11)
             if column==10:
                 next_positions.append((row-1, 2)) # periodicity of the table
             if row==10:
@@ -103,29 +106,80 @@ def grundy_table() -> List[List[int]]:
 
 grundyTable = grundy_table()
 
-# def clock_nim (layout: List[List[bool]]) -> 
-for ligne in (grundyTable):
-    print(ligne)
 
-def clock_nim(game):
-    clock = game.tower.layout[-1] % 3
+# for ligne in (grundyTable):
+#     print(ligne)
+
+def forbidden_rows(game: Game):
+    if game.tower.layout[-1] == FLOOR_FULL:
+        return 1
+    else:
+        return 2
+
+def clock_nim(game: Game):
+    clock_value = sum(game.tower.layout[-1]) % 3
     # layers0 = 0 # nb of layers of size 0 = terminal layer
     # number of layers of size 0 is not necessary for the clock nim position
     layers1 = 0 # nb of layers of size 1 = 1 turn to become terminal layer
     layers2 = 0 # nb of layers of size 2 = 2 turns to become terminal layer
-    for floor in game.tower.layout[:-1]:
+    nb_forbidden_rows = forbidden_rows(game)
+    for floor in game.tower.layout[:-nb_forbidden_rows]:
         if floor==FLOOR_FULL:
             layers2 += 1
-        elif floor in [FLOOR_SINGLE_SIDE, FLOOR_SINGLE_SIDE_REVERSED]:
+        elif floor in [FLOOR_GLUED, FLOOR_GLUED_REVERSED]:
             layers1 += 1
     # period is already known = 3
-    return (clock, layers1, layers2)
+    return (clock_value, layers1, layers2)
     
 
-def grundy_number(clock, layers1, layers2):
+def grundy_number(clock, row, column):
     # 9-periodicity of the grundy table
-    row = layers1 % 9
-    column = (3*layers2+clock) % 9
+    # row = layers1 % 9
+    # column = (3*layers2-1+clock) % 9 
     return grundyTable[row][column]
 
 
+def get_moves(game: Game, row, column, new_row, new_column):
+    vector = (new_row - row, new_column - column)
+    print("vector = ", vector)
+    nb_forbidden_rows = forbidden_rows(game)
+    nb_allowed_floors = len(game.tower.layout) - nb_forbidden_rows
+    print("nb_allowed_floors = ", nb_allowed_floors)
+
+    # blocks contains coordinates of all the blocks that can be removed to get to the new position 
+    blocks = []
+
+    if vector not in [(0, -2), (1, -2), (-1, 1)]:
+        raise ValueError(f"invalid vector")
+
+    if vector == (0, -2):
+        # remove middle block from a pile of size 2 (=> remove 1 pile of size 2)
+        for i in range(nb_allowed_floors):
+            layer = game.tower.layout[i]
+            if layer in SIZE_2:
+                blocks.append((1, i)) # remove middle block
+
+    elif vector == (1, -2):
+        # remove 1 lateral block from a pile of size 2 (=> remove 1 pile of size 2, add 1 pile of size 1)
+        for i in range(nb_allowed_floors):
+            layer = game.tower.layout[i]
+            if layer in SIZE_2:
+                # remove side block
+                blocks.append((0, i))
+                blocks.append((2, i)) 
+
+    else: # vector == (-1,1)
+        # remove 1 lateral block from a pile of size 1 (=> remove 1 pile of size 1)
+        for i in range(nb_allowed_floors):
+            layer = game.tower.layout[i]
+            if layer in SIZE_1:
+                # remove side block 
+                if layer == FLOOR_GLUED:
+                    blocks.append((0, i)) 
+                else:
+                    blocks.append((2, i))
+
+    return blocks
+
+
+    
