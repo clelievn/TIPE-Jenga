@@ -1,7 +1,7 @@
 from typing import List
 
-from constants import FLOOR_SINGLE_SIDE_REVERSED, FLOOR_SINGLE_SIDE, FLOOR_FULL, FLOOR_GLUED, \
-    FLOOR_GLUED_REVERSED, TOWER_DEFAULT_LAYOUT
+from constants import FLOOR_SINGLE_SIDE_REVERSED, FLOOR_SINGLE_SIDE, FLOOR_APART, FLOOR_MIDDLE, FLOOR_FULL,\
+    TOWER_DEFAULT_LAYOUT
 
 
 class Tower(object):
@@ -40,18 +40,18 @@ class Tower(object):
     def __getitem__(self, item):
         return self.layout[item]
 
-    def is_stable(self) -> bool:
-        """Determines whether the tower is stable"""
-        if len(self.layout) == 0:
-            return True  # an empty tower is stable
+    # def is_stable(self) -> bool:
+    #     """Determines whether the tower is stable"""
+    #     if len(self.layout) == 0:
+    #         return True  # an empty tower is stable
 
-        if len(self.layout) == 1:
-            return True  # a tower with only one row is stable
+    #     if len(self.layout) == 1:
+    #         return True  # a tower with only one row is stable
 
-        for floor in self.layout[:-1]:  # skip last row
-            if floor in [FLOOR_SINGLE_SIDE, FLOOR_SINGLE_SIDE_REVERSED]:
-                return False
-        return True
+    #     for floor in self.layout[:-1]:  # skip last row
+    #         if floor in [FLOOR_SINGLE_SIDE, FLOOR_SINGLE_SIDE_REVERSED]:
+    #             return False
+    #     return True
 
     def _strip(layout: List[List[bool]]) -> List[List[bool]]:
         """Strips empty rows from the bottom/top of a layout"""
@@ -90,14 +90,40 @@ class Tower(object):
                 return False  # floating blocks
         return True
 
+    def _is_stable(layout: List[List[bool]]) -> bool:
+        """Determines whether a layout is stable"""
+        if len(layout) == 1:
+            return True
+
+        if layout[-1] == FLOOR_FULL:
+            nb_forbidden_rows = 1
+        else:
+            nb_forbidden_rows = 2
+
+        for floor in layout[:-nb_forbidden_rows]:  # skip last floor(s) (cannot play with blocks from last completed row)
+            if floor in [FLOOR_SINGLE_SIDE, FLOOR_SINGLE_SIDE_REVERSED, [False, False, False]]:
+                return False
+        return True
+
+    def is_stable(self) -> bool:
+        return Tower._is_stable(self.layout)
+
+
     def _is_terminal(layout: List[List[bool]]) -> bool:
         """Determines whether a layout is terminal"""
         if len(layout) == 1:
             return True
 
-        for floor in layout[:-1]:  # skip last floor (cannot play with blocks from last row)
-            if floor in [FLOOR_FULL, FLOOR_GLUED, FLOOR_GLUED_REVERSED]:
+        if layout[-1] == FLOOR_FULL:
+            nb_forbidden_rows = 1
+        else:
+            nb_forbidden_rows = 2
+
+        for floor in layout[:-nb_forbidden_rows]:  # skip last floor(s) (cannot play with blocks from last completed row)
+            if floor not in [FLOOR_MIDDLE, FLOOR_APART]:
                 return False
+
+                
         return True
 
     def is_terminal(self) -> bool:
