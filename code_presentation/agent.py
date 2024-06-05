@@ -82,7 +82,7 @@ class Agent:
         else:
             axis = random.choice(["x", "y"])
         # game.play((x, z), (new_x, create_new_row))
-        game.play_friction((x, z), (new_x, create_new_row), axis)
+        return game.play_friction((x, z), (new_x, create_new_row), axis)
 
     def play_grundy_friction(game: Game):
         # winning position : grundy_value = 0
@@ -151,4 +151,4 @@ class Agent:
         else:
             new_x = random.choice([i for i in range(3) if game.tower[-1][i] is False])
         # game.play((x, z), (new_x, create_new_row))
-        game.play_friction((x, z), (new_x, create_new_row), axis)        
+        return game.play_friction((x, z), (new_x, create_new_row), axis)        
