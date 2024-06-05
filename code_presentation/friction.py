@@ -8,9 +8,6 @@ from constants import TOWER_N_FLOORS
 from constants import BLOCK_MASS, BLOCK_MUS, G, F_INF, F_SUP
 
 
-# choose between X-axis and Y-axis translation (no rotation)
-# create a list of lists (basically another tower.layout) which contains (Fmax_x, Fmax_y) for each block of the tower
-
 
 
 import random
@@ -24,8 +21,6 @@ def type_of_extraction(z, x, axis, tower: Tower):
             return "parallel" # with the torque
         else:
             return "perpendicular" # without torque
-
-# print("Random force exerted by the player:", random_force, "N")
 
 # returns a random force between f_inf and f_sup, for example in [0.1 N, 5 N]
 def f_app(f_inf, f_sup):
@@ -60,13 +55,6 @@ def f_slide(z, z_above, x, x_above, tower: Tower):
     else:
         m_top = BLOCK_MASS + mass_above(z_above, x_above, tower)
         return BLOCK_MUS * m_top * G
-
-
-# Fapp must be greater than all f_slides, thus greater than the max of f_slides exerted on the block
-# def f_slide_max(z, x, tower: Tower):
-#     z_above = z+1
-#     f_slides = [f_slide(z, z_above, x, x_above, tower) for x_above in range(3)]
-#     return max(f_slides)
 
 
 # returns |f_bottom| friction force between removed block (x,z) and lower block (x_under, z-1) if possible
