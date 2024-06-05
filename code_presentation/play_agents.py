@@ -84,7 +84,7 @@ while not game_over:
     else:
         print("\n", "🧮 Current game status:", "\n", game.tower, "\n")
         print("\n", "💻 agent_grundy_friction playing...", "\n")
-        agent_grundy_friction.play_grundy_friction(game)
+        missed_extraction = agent_grundy_friction.play_grundy_friction(game)
         turn_grundy = True
         if (missed_extraction):
             game_over = True
