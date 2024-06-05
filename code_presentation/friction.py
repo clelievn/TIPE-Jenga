@@ -32,16 +32,6 @@ def f_app(f_inf, f_sup):
     return random.uniform(f_inf, f_sup)
 
 
-
-
-# cette fonction est fausse 
-# def f_app(axis, fmax_x, fmax_y):
-#     if axis == "x":
-#         return random.uniform(0., fmax_x)
-#     else:
-#         return random.uniform(0., fmax_y)
-    
-
 # returns the mass above the block (x,z), not including the mass of the block (x,z) if there is a block
 # if there is no block, returns 0
 # recursive
